@@ -21,7 +21,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export type User = { id: string; name: string; email: string };
-export type Workspace = { id: string; name: string; industry: string; role: string };
+export type Workspace = { id: string; name: string; industry: string; role: string; arr: number; openDeals: number };
 
 export type Stage = { id: string; label: string; position: number; prob: number; kind: "open" | "won" | "lost" };
 export type Source = { id: string; label: string; marketing: boolean; position: number };

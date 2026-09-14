@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api, ApiError, type User, type Workspace } from "@/lib/api";
+import { short } from "@/lib/format";
+import { inputCls, primaryBtnCls } from "@/lib/ui";
+import { Mark } from "@/components/Mark";
 
 export default function WorkspacesPage() {
   const router = useRouter();
@@ -41,60 +44,87 @@ export default function WorkspacesPage() {
     router.push("/sign-in");
   };
 
-  if (loading) return <div className="min-h-screen grid place-items-center text-[#7B7589]">Loading…</div>;
+  if (loading) return <div className="min-h-screen grid place-items-center text-[#7B7589] bg-[#F4F2F8]">Loading…</div>;
 
   return (
-    <div className="min-h-screen bg-[#F4F2F8] p-8">
-      <div className="max-w-3xl mx-auto flex flex-col gap-6">
-        <header className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-[#141220]">Clients</h1>
-            <p className="text-sm text-[#7B7589]">Signed in as {user?.name} ({user?.email})</p>
+    <div className="min-h-screen bg-[#F4F2F8]">
+      <header className="bg-white border-b border-[#E9E4F2] px-10 py-5 flex items-center gap-4">
+        <span className="w-9 h-9 rounded-xl bg-gradient-to-r from-[#7C40D4] via-[#B98CFF] to-[#FE7CC2] text-white grid place-items-center shrink-0">
+          <Mark size={16} />
+        </span>
+        <div>
+          <div className="text-[17px] font-bold text-[#141220]">Clients</div>
+          <div className="text-[13px] text-[#7B7589]">{workspaces.length} {workspaces.length === 1 ? "workspace" : "workspaces"}</div>
+        </div>
+        <div className="ml-auto flex items-center gap-4">
+          <div className="text-right">
+            <div className="text-[13.5px] font-semibold text-[#141220]">{user?.name}</div>
+            <div className="text-[12px] text-[#7B7589]">{user?.email}</div>
           </div>
           <button
             onClick={signOut}
-            className="text-sm font-semibold text-[#7C40D4] cursor-pointer transition-transform duration-150 hover:scale-105 active:scale-95"
+            className="text-[13.5px] font-semibold text-[#7C40D4] cursor-pointer transition-transform duration-150 hover:scale-105 active:scale-95"
           >
             Sign out
           </button>
-        </header>
-
-        <div className="grid gap-3">
-          {workspaces.map((w) => (
-            <Link
-              key={w.id}
-              href={`/workspaces/${w.id}`}
-              className="bg-white border border-[#E9E4F2] rounded-xl p-4 cursor-pointer transition-transform duration-150 hover:scale-[1.01] hover:border-[#7C40D4] active:scale-[0.99]"
-            >
-              <div className="font-semibold text-[#141220]">{w.name}</div>
-              <div className="text-sm text-[#7B7589]">{w.industry || "—"} · {w.role}</div>
-            </Link>
-          ))}
-          {!workspaces.length && (
-            <p className="text-sm text-[#7B7589]">No client workspaces yet. Create one below.</p>
-          )}
         </div>
+      </header>
 
-        <form onSubmit={createWorkspace} className="bg-white border border-[#E9E4F2] rounded-xl p-4 flex gap-3 text-[#141220]">
-          <input
-            placeholder="Company name"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            className="flex-1 rounded-lg border border-[#E9E4F2] bg-[#F7F5FB] px-3 py-2 text-sm outline-none focus:border-[#7C40D4] placeholder:text-[#7B7589]"
-          />
-          <input
-            placeholder="Industry"
-            value={newIndustry}
-            onChange={(e) => setNewIndustry(e.target.value)}
-            className="flex-1 rounded-lg border border-[#E9E4F2] bg-[#F7F5FB] px-3 py-2 text-sm outline-none focus:border-[#7C40D4] placeholder:text-[#7B7589]"
-          />
-          <button
-            type="submit"
-            className="rounded-lg px-4 text-sm font-bold text-white bg-gradient-to-r from-[#7C40D4] via-[#B98CFF] to-[#FE7CC2] cursor-pointer transition-transform duration-150 hover:scale-[1.03] active:scale-95"
-          >
-            Create
-          </button>
-        </form>
+      <div className="px-10 py-8 flex flex-col gap-7 max-w-[1600px]">
+        {workspaces.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {workspaces.map((w) => (
+              <Link
+                key={w.id}
+                href={`/workspaces/${w.id}`}
+                className="bg-white border border-[#E9E4F2] rounded-2xl p-6 flex flex-col gap-5 cursor-pointer transition-transform duration-150 hover:scale-[1.015] hover:border-[#7C40D4] active:scale-[0.99] shadow-[0_1px_2px_rgba(11,10,13,.05)]"
+              >
+                <header className="flex items-center gap-3">
+                  <span className="w-10 h-10 rounded-xl bg-[#7C40D4]/10 text-[#7C40D4] grid place-items-center text-[13px] font-extrabold shrink-0">
+                    {w.name.slice(0, 2).toUpperCase()}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="text-[15px] font-bold text-[#141220] truncate">{w.name}</div>
+                    <div className="text-[12.5px] text-[#7B7589] truncate">{w.industry || "—"}</div>
+                  </div>
+                </header>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-wide text-[#7B7589]">ARR</div>
+                    <div className="text-[19px] font-extrabold text-[#141220] mt-1">{short(w.arr)}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-wide text-[#7B7589]">Open deals</div>
+                    <div className="text-[19px] font-extrabold text-[#141220] mt-1">{w.openDeals}</div>
+                  </div>
+                </div>
+                <div className="text-[12px] text-[#7B7589] pt-4 border-t border-[#F0ECF7] capitalize">{w.role} access</div>
+              </Link>
+            ))}
+          </div>
+        )}
+        {!workspaces.length && (
+          <div className="bg-white border border-dashed border-[#E9E4F2] rounded-2xl p-12 text-center text-[#7B7589]">
+            No client workspaces yet. Create the first one below.
+          </div>
+        )}
+
+        <div className="bg-white border border-[#E9E4F2] rounded-2xl p-6 max-w-xl">
+          <h2 className="text-[15px] font-bold text-[#141220] mb-4">New client</h2>
+          <form onSubmit={createWorkspace} className="flex flex-wrap gap-4 items-end">
+            <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589] flex-1 min-w-[180px]">
+              Company name
+              <input className={inputCls} value={newName} onChange={(e) => setNewName(e.target.value)} />
+            </label>
+            <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589] flex-1 min-w-[180px]">
+              Industry
+              <input className={inputCls} value={newIndustry} onChange={(e) => setNewIndustry(e.target.value)} />
+            </label>
+            <button type="submit" className={primaryBtnCls} disabled={!newName.trim()}>
+              Create
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

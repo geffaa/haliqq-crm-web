@@ -71,6 +71,23 @@ export default function WorkspacesPage() {
       </header>
 
       <div className="px-10 py-8 flex flex-col gap-7 max-w-[1600px]">
+        <div className="bg-white border border-[#E9E4F2] rounded-2xl p-6 max-w-xl">
+          <h2 className="text-[15px] font-bold text-[#141220] mb-4">New client</h2>
+          <form onSubmit={createWorkspace} className="flex flex-wrap gap-4 items-end">
+            <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589] flex-1 min-w-[180px]">
+              Company name
+              <input className={inputCls} value={newName} onChange={(e) => setNewName(e.target.value)} />
+            </label>
+            <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589] flex-1 min-w-[180px]">
+              Industry
+              <input className={inputCls} value={newIndustry} onChange={(e) => setNewIndustry(e.target.value)} />
+            </label>
+            <button type="submit" className={primaryBtnCls} disabled={!newName.trim()}>
+              Create
+            </button>
+          </form>
+        </div>
+
         {workspaces.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {workspaces.map((w) => (
@@ -105,26 +122,9 @@ export default function WorkspacesPage() {
         )}
         {!workspaces.length && (
           <div className="bg-white border border-dashed border-[#E9E4F2] rounded-2xl p-12 text-center text-[#7B7589]">
-            No client workspaces yet. Create the first one below.
+            No client workspaces yet. Create the first one above.
           </div>
         )}
-
-        <div className="bg-white border border-[#E9E4F2] rounded-2xl p-6 max-w-xl">
-          <h2 className="text-[15px] font-bold text-[#141220] mb-4">New client</h2>
-          <form onSubmit={createWorkspace} className="flex flex-wrap gap-4 items-end">
-            <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589] flex-1 min-w-[180px]">
-              Company name
-              <input className={inputCls} value={newName} onChange={(e) => setNewName(e.target.value)} />
-            </label>
-            <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589] flex-1 min-w-[180px]">
-              Industry
-              <input className={inputCls} value={newIndustry} onChange={(e) => setNewIndustry(e.target.value)} />
-            </label>
-            <button type="submit" className={primaryBtnCls} disabled={!newName.trim()}>
-              Create
-            </button>
-          </form>
-        </div>
       </div>
     </div>
   );

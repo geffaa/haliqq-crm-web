@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import { api, ApiError, type Deal, type DealInput, type Account, type Contact, type Rep, type Stage, type Source } from "@/lib/api";
 import { inputCls, primaryBtnCls, ghostBtnCls, dangerBtnCls } from "@/lib/ui";
 import { useEditableList } from "@/lib/useEditableList";
 import { Card } from "@/components/Card";
 import { PageHeader } from "@/components/PageHeader";
+import { Drawer } from "@/components/Drawer";
 
 const empty: DealInput = {
   accountId: null,
@@ -54,6 +56,7 @@ export function DealsTab({
   sources: Source[];
 }) {
   const [view, setView] = useState<"board" | "table">("board");
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const { form, setForm, editingId, edit, cancel, submit, remove, error } = useEditableList(
     wsId,
     deals,
@@ -64,8 +67,20 @@ export function DealsTab({
   );
   const [dragError, setDragError] = useState<string | null>(null);
 
+  const openCreate = () => {
+    cancel();
+    setDrawerOpen(true);
+  };
+  const openEdit = (d: Deal) => {
+    edit(d);
+    setDrawerOpen(true);
+  };
+  const onSubmit = async (e: React.FormEvent) => {
+    if (await submit(e)) setDrawerOpen(false);
+  };
+
   // Drag-and-drop moves are independent of whatever's loaded in the edit
-  // form above — a stage change shouldn't require opening the deal first.
+  // drawer — a stage change shouldn't require opening the deal first.
   const moveToStage = async (deal: Deal, stageId: string) => {
     if (deal.stageId === stageId) return;
     setDragError(null);
@@ -82,89 +97,33 @@ export function DealsTab({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center gap-4">
-        <PageHeader title="Deals" count={deals.length} note={`${totalValue.toLocaleString()} total value`} />
-        <div className="ml-auto flex gap-1 bg-white border border-[#E9E4F2] rounded-xl p-1">
-          {(["board", "table"] as const).map((v) => (
-            <button
-              key={v}
-              onClick={() => setView(v)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-semibold capitalize cursor-pointer transition-colors ${
-                view === v ? "bg-[#7C40D4] text-white" : "text-[#7B7589] hover:text-[#141220]"
-              }`}
-            >
-              {v}
+      <PageHeader
+        title="Deals"
+        count={deals.length}
+        note={`${totalValue.toLocaleString()} total value`}
+        action={
+          <div className="flex items-center gap-3">
+            <div className="flex gap-1 bg-white border border-[#E9E4F2] rounded-xl p-1">
+              {(["board", "table"] as const).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-semibold capitalize cursor-pointer transition-colors ${
+                    view === v ? "bg-[#7C40D4] text-white" : "text-[#7B7589] hover:text-[#141220]"
+                  }`}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+            <button onClick={openCreate} className={primaryBtnCls}>
+              <span className="inline-flex items-center gap-1.5"><Plus size={15} strokeWidth={2.4} /> New deal</span>
             </button>
-          ))}
-        </div>
-      </div>
+          </div>
+        }
+      />
 
-      <Card title={editingId ? "Edit deal" : "New deal"}>
-        <form onSubmit={submit} className="flex flex-wrap gap-4 items-end">
-          <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589]">
-            Deal title
-            <input className={inputCls} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-          </label>
-          <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589]">
-            Value
-            <input type="number" className={inputCls} value={form.value} onChange={(e) => setForm({ ...form, value: +e.target.value || 0 })} />
-          </label>
-          <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589]">
-            Stage
-            <select className={inputCls} value={form.stageId} onChange={(e) => setForm({ ...form, stageId: e.target.value })}>
-              {stages.map((s) => (
-                <option key={s.id} value={s.id}>{s.label}</option>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589]">
-            Company
-            <select className={inputCls} value={form.accountId ?? ""} onChange={(e) => setForm({ ...form, accountId: e.target.value || null })}>
-              <option value="">None</option>
-              {accounts.map((a) => (
-                <option key={a.id} value={a.id}>{a.name}</option>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589]">
-            Contact
-            <select className={inputCls} value={form.contactId ?? ""} onChange={(e) => setForm({ ...form, contactId: e.target.value || null })}>
-              <option value="">None</option>
-              {contacts.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589]">
-            Owner
-            <select className={inputCls} value={form.ownerId ?? ""} onChange={(e) => setForm({ ...form, ownerId: e.target.value || null })}>
-              <option value="">Unassigned</option>
-              {reps.map((r) => (
-                <option key={r.id} value={r.id}>{r.name}</option>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589]">
-            Source
-            <select className={inputCls} value={form.sourceId ?? ""} onChange={(e) => setForm({ ...form, sourceId: e.target.value || null })}>
-              <option value="">None</option>
-              {sources.map((s) => (
-                <option key={s.id} value={s.id}>{s.label}</option>
-              ))}
-            </select>
-          </label>
-          <button type="submit" className={primaryBtnCls} disabled={!form.title.trim() || !form.stageId}>
-            {editingId ? "Save changes" : "Create"}
-          </button>
-          {editingId && (
-            <button type="button" className={ghostBtnCls} onClick={cancel}>
-              Cancel
-            </button>
-          )}
-        </form>
-      </Card>
-
-      {(error || dragError) && <p className="text-sm text-[#E0517A]">{error || dragError}</p>}
+      {dragError && <p className="text-sm text-[#E0517A]">{dragError}</p>}
 
       {view === "board" ? (
         <div className="flex gap-4 overflow-x-auto pb-2">
@@ -193,10 +152,8 @@ export function DealsTab({
                       key={d.id}
                       draggable
                       onDragStart={(e) => e.dataTransfer.setData("dealId", d.id)}
-                      onClick={() => edit(d)}
-                      className={`bg-white border border-[#E9E4F2] rounded-xl p-3 cursor-pointer transition-shadow hover:shadow-md ${
-                        editingId === d.id ? "ring-2 ring-[#7C40D4]" : ""
-                      }`}
+                      onClick={() => openEdit(d)}
+                      className="bg-white border border-[#E9E4F2] rounded-xl p-3 cursor-pointer transition-shadow hover:shadow-md"
                     >
                       <div className="text-[13.5px] font-bold text-[#141220] leading-snug">{d.title}</div>
                       <div className="text-[12px] text-[#7B7589] mt-1">{accountName(d.accountId)}</div>
@@ -226,8 +183,8 @@ export function DealsTab({
                 {deals.map((d) => (
                   <tr
                     key={d.id}
-                    onClick={() => edit(d)}
-                    className={`border-t border-[#F0ECF7] cursor-pointer transition-colors hover:bg-[#FAF9FC] ${editingId === d.id ? "bg-[#7C40D4]/5" : ""}`}
+                    onClick={() => openEdit(d)}
+                    className="border-t border-[#F0ECF7] cursor-pointer transition-colors hover:bg-[#FAF9FC]"
                   >
                     <td className="px-6 py-3.5 font-semibold">{d.title}</td>
                     <td className="px-6 py-3.5 text-[#7B7589]">{accountName(d.accountId)}</td>
@@ -262,6 +219,93 @@ export function DealsTab({
             </table>
           </div>
         </Card>
+      )}
+
+      {drawerOpen && (
+        <Drawer title={editingId ? "Edit deal" : "New deal"} onClose={() => setDrawerOpen(false)} wide>
+          <form onSubmit={onSubmit} className="flex flex-col gap-4">
+            <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+              Deal title
+              <input className={`${inputCls} w-full`} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} autoFocus />
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+                Value
+                <input type="number" className={`${inputCls} w-full`} value={form.value} onChange={(e) => setForm({ ...form, value: +e.target.value || 0 })} />
+              </label>
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+                Stage
+                <select className={`${inputCls} w-full`} value={form.stageId} onChange={(e) => setForm({ ...form, stageId: e.target.value })}>
+                  {stages.map((s) => (
+                    <option key={s.id} value={s.id}>{s.label}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+                Company
+                <select className={`${inputCls} w-full`} value={form.accountId ?? ""} onChange={(e) => setForm({ ...form, accountId: e.target.value || null })}>
+                  <option value="">None</option>
+                  {accounts.map((a) => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+                Contact
+                <select className={`${inputCls} w-full`} value={form.contactId ?? ""} onChange={(e) => setForm({ ...form, contactId: e.target.value || null })}>
+                  <option value="">None</option>
+                  {contacts.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+                Owner
+                <select className={`${inputCls} w-full`} value={form.ownerId ?? ""} onChange={(e) => setForm({ ...form, ownerId: e.target.value || null })}>
+                  <option value="">Unassigned</option>
+                  {reps.map((r) => (
+                    <option key={r.id} value={r.id}>{r.name}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+                Source
+                <select className={`${inputCls} w-full`} value={form.sourceId ?? ""} onChange={(e) => setForm({ ...form, sourceId: e.target.value || null })}>
+                  <option value="">None</option>
+                  {sources.map((s) => (
+                    <option key={s.id} value={s.id}>{s.label}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            {error && <p className="text-sm text-[#E0517A]">{error}</p>}
+
+            <div className="flex items-center gap-3 pt-4 mt-2 border-t border-[#F0ECF7]">
+              {editingId && (
+                <button
+                  type="button"
+                  className="text-[13px] font-semibold text-[#E0517A] cursor-pointer transition-transform hover:scale-105 active:scale-95"
+                  onClick={async () => { await remove(editingId); setDrawerOpen(false); }}
+                >
+                  Remove
+                </button>
+              )}
+              <div className="ml-auto flex items-center gap-3">
+                <button type="button" className={ghostBtnCls} onClick={() => setDrawerOpen(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className={primaryBtnCls} disabled={!form.title.trim() || !form.stageId}>
+                  {editingId ? "Save changes" : "Create"}
+                </button>
+              </div>
+            </div>
+          </form>
+        </Drawer>
       )}
     </div>
   );

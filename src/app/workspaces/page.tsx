@@ -3,17 +3,19 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { LogOut, Plus } from "lucide-react";
 import { api, ApiError, type User, type Workspace } from "@/lib/api";
 import { short } from "@/lib/format";
-import { inputCls, primaryBtnCls } from "@/lib/ui";
+import { inputCls, primaryBtnCls, ghostBtnCls } from "@/lib/ui";
 import { Mark } from "@/components/Mark";
-import { LogOut } from "lucide-react";
+import { Drawer } from "@/components/Drawer";
 
 export default function WorkspacesPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newIndustry, setNewIndustry] = useState("");
 
@@ -38,6 +40,7 @@ export default function WorkspacesPage() {
     setWorkspaces((w) => [...w, ws]);
     setNewName("");
     setNewIndustry("");
+    setDrawerOpen(false);
   };
 
   const signOut = async () => {
@@ -60,6 +63,11 @@ export default function WorkspacesPage() {
           <div className="text-[17px] font-bold text-[#141220]">Clients</div>
           <div className="text-[13px] text-[#7B7589]">{workspaces.length} {workspaces.length === 1 ? "workspace" : "workspaces"}</div>
         </div>
+
+        <button onClick={() => setDrawerOpen(true)} className={`${primaryBtnCls} ml-6`}>
+          <span className="inline-flex items-center gap-1.5"><Plus size={15} strokeWidth={2.4} /> New client</span>
+        </button>
+
         <div className="ml-auto flex items-center gap-3 pl-4 border-l border-[#E9E4F2]">
           <span className="w-9 h-9 rounded-full bg-gradient-to-r from-[#7C40D4] via-[#B98CFF] to-[#FE7CC2] text-white grid place-items-center text-[12px] font-extrabold shrink-0">
             {initials(user?.name)}
@@ -80,26 +88,6 @@ export default function WorkspacesPage() {
       </header>
 
       <div className="px-10 py-8 flex flex-col gap-7 max-w-[1600px]">
-        <div className="bg-white border border-[#E9E4F2] rounded-2xl p-6 flex flex-wrap items-end gap-6">
-          <div className="min-w-[160px]">
-            <h2 className="text-[15px] font-bold text-[#141220]">New client</h2>
-            <p className="text-[12.5px] text-[#7B7589] mt-1">Seeds default stages, sources, and channels.</p>
-          </div>
-          <form onSubmit={createWorkspace} className="flex flex-wrap gap-4 items-end flex-1">
-            <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589] flex-1 min-w-[220px]">
-              Company name
-              <input className={inputCls} value={newName} onChange={(e) => setNewName(e.target.value)} />
-            </label>
-            <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589] flex-1 min-w-[220px]">
-              Industry
-              <input className={inputCls} value={newIndustry} onChange={(e) => setNewIndustry(e.target.value)} />
-            </label>
-            <button type="submit" className={primaryBtnCls} disabled={!newName.trim()}>
-              Create
-            </button>
-          </form>
-        </div>
-
         {workspaces.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {workspaces.map((w) => (
@@ -138,6 +126,34 @@ export default function WorkspacesPage() {
           </div>
         )}
       </div>
+
+      {drawerOpen && (
+        <Drawer title="New client" onClose={() => setDrawerOpen(false)}>
+          <form onSubmit={createWorkspace} className="flex flex-col gap-4">
+            <p className="text-[13px] text-[#7B7589] leading-relaxed -mt-1">
+              A fresh workspace is created with default stages, sources, and channels — you can change all of them inside it.
+            </p>
+            <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+              Company name
+              <input className={`${inputCls} w-full`} value={newName} onChange={(e) => setNewName(e.target.value)} autoFocus />
+            </label>
+            <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+              Industry
+              <input className={`${inputCls} w-full`} value={newIndustry} onChange={(e) => setNewIndustry(e.target.value)} placeholder="e.g. Logistics" />
+            </label>
+            <div className="flex items-center gap-3 pt-4 mt-2 border-t border-[#F0ECF7]">
+              <div className="ml-auto flex items-center gap-3">
+                <button type="button" className={ghostBtnCls} onClick={() => setDrawerOpen(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className={primaryBtnCls} disabled={!newName.trim()}>
+                  Create and open
+                </button>
+              </div>
+            </div>
+          </form>
+        </Drawer>
+      )}
     </div>
   );
 }

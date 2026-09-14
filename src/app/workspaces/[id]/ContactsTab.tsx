@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
+import { Plus } from "lucide-react";
 import { api, type Contact, type ContactInput, type Account } from "@/lib/api";
 import { inputCls, primaryBtnCls, ghostBtnCls, dangerBtnCls } from "@/lib/ui";
 import { useEditableList } from "@/lib/useEditableList";
 import { Card } from "@/components/Card";
 import { PageHeader } from "@/components/PageHeader";
+import { Drawer } from "@/components/Drawer";
 
 const empty: ContactInput = { accountId: null, name: "", role: "", email: "", phone: "", note: "" };
 const toInput = (c: Contact): ContactInput => ({
@@ -27,6 +30,7 @@ export function ContactsTab({
   setContacts: (c: Contact[]) => void;
   accounts: Account[];
 }) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const { form, setForm, editingId, edit, cancel, submit, remove, error } = useEditableList(
     wsId,
     contacts,
@@ -36,55 +40,31 @@ export function ContactsTab({
     toInput,
   );
 
+  const openCreate = () => {
+    cancel();
+    setDrawerOpen(true);
+  };
+  const openEdit = (c: Contact) => {
+    edit(c);
+    setDrawerOpen(true);
+  };
+  const onSubmit = async (e: React.FormEvent) => {
+    if (await submit(e)) setDrawerOpen(false);
+  };
+
   const accountName = (id: string | null) => accounts.find((a) => a.id === id)?.name ?? "—";
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader title="People" count={contacts.length} />
-
-      <Card title={editingId ? "Edit contact" : "New contact"}>
-        <form onSubmit={submit} className="flex flex-wrap gap-4 items-end">
-          <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589]">
-            Name
-            <input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          </label>
-          <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589]">
-            Company
-            <select
-              className={inputCls}
-              value={form.accountId ?? ""}
-              onChange={(e) => setForm({ ...form, accountId: e.target.value || null })}
-            >
-              <option value="">None</option>
-              {accounts.map((a) => (
-                <option key={a.id} value={a.id}>{a.name}</option>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589]">
-            Role
-            <input className={inputCls} value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder="CFO" />
-          </label>
-          <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589]">
-            Email
-            <input className={inputCls} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-          </label>
-          <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589]">
-            Phone
-            <input className={inputCls} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-          </label>
-          <button type="submit" className={primaryBtnCls} disabled={!form.name.trim()}>
-            {editingId ? "Save changes" : "Create"}
+      <PageHeader
+        title="People"
+        count={contacts.length}
+        action={
+          <button onClick={openCreate} className={primaryBtnCls}>
+            <span className="inline-flex items-center gap-1.5"><Plus size={15} strokeWidth={2.4} /> New contact</span>
           </button>
-          {editingId && (
-            <button type="button" className={ghostBtnCls} onClick={cancel}>
-              Cancel
-            </button>
-          )}
-        </form>
-      </Card>
-
-      {error && <p className="text-sm text-[#E0517A]">{error}</p>}
+        }
+      />
 
       <Card title="All people" note={`${contacts.length} ${contacts.length === 1 ? "contact" : "contacts"}`}>
         <div className="-mx-6 overflow-x-auto">
@@ -102,8 +82,8 @@ export function ContactsTab({
               {contacts.map((c) => (
                 <tr
                   key={c.id}
-                  onClick={() => edit(c)}
-                  className={`border-t border-[#F0ECF7] cursor-pointer transition-colors hover:bg-[#FAF9FC] ${editingId === c.id ? "bg-[#7C40D4]/5" : ""}`}
+                  onClick={() => openEdit(c)}
+                  className="border-t border-[#F0ECF7] cursor-pointer transition-colors hover:bg-[#FAF9FC]"
                 >
                   <td className="px-6 py-3.5 font-semibold">{c.name}</td>
                   <td className="px-6 py-3.5 text-[#7B7589]">{accountName(c.accountId)}</td>
@@ -127,6 +107,66 @@ export function ContactsTab({
           </table>
         </div>
       </Card>
+
+      {drawerOpen && (
+        <Drawer title={editingId ? "Edit contact" : "New contact"} onClose={() => setDrawerOpen(false)}>
+          <form onSubmit={onSubmit} className="flex flex-col gap-4">
+            <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+              Name
+              <input className={`${inputCls} w-full`} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoFocus />
+            </label>
+            <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+              Company
+              <select
+                className={`${inputCls} w-full`}
+                value={form.accountId ?? ""}
+                onChange={(e) => setForm({ ...form, accountId: e.target.value || null })}
+              >
+                <option value="">None</option>
+                {accounts.map((a) => (
+                  <option key={a.id} value={a.id}>{a.name}</option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+              Role
+              <input className={`${inputCls} w-full`} value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder="CFO" />
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+                Email
+                <input className={`${inputCls} w-full`} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              </label>
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+                Phone
+                <input className={`${inputCls} w-full`} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              </label>
+            </div>
+
+            {error && <p className="text-sm text-[#E0517A]">{error}</p>}
+
+            <div className="flex items-center gap-3 pt-4 mt-2 border-t border-[#F0ECF7]">
+              {editingId && (
+                <button
+                  type="button"
+                  className="text-[13px] font-semibold text-[#E0517A] cursor-pointer transition-transform hover:scale-105 active:scale-95"
+                  onClick={async () => { await remove(editingId); setDrawerOpen(false); }}
+                >
+                  Remove
+                </button>
+              )}
+              <div className="ml-auto flex items-center gap-3">
+                <button type="button" className={ghostBtnCls} onClick={() => setDrawerOpen(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className={primaryBtnCls} disabled={!form.name.trim()}>
+                  {editingId ? "Save changes" : "Create"}
+                </button>
+              </div>
+            </div>
+          </form>
+        </Drawer>
+      )}
     </div>
   );
 }

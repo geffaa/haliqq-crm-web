@@ -1,15 +1,19 @@
 "use client";
 
+import { useState } from "react";
+import { Plus } from "lucide-react";
 import { api, type Rep, type RepInput } from "@/lib/api";
 import { inputCls, primaryBtnCls, ghostBtnCls, dangerBtnCls } from "@/lib/ui";
 import { useEditableList } from "@/lib/useEditableList";
 import { Card } from "@/components/Card";
 import { PageHeader } from "@/components/PageHeader";
+import { Drawer } from "@/components/Drawer";
 
 const empty: RepInput = { name: "", role: "", quota: 0, since: null };
 const toInput = (r: Rep): RepInput => ({ name: r.name, role: r.role, quota: r.quota, since: r.since });
 
 export function TeamTab({ wsId, reps, setReps }: { wsId: string; reps: Rep[]; setReps: (r: Rep[]) => void }) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const { form, setForm, editingId, edit, cancel, submit, remove, error } = useEditableList(
     wsId,
     reps,
@@ -19,43 +23,32 @@ export function TeamTab({ wsId, reps, setReps }: { wsId: string; reps: Rep[]; se
     toInput,
   );
 
+  const openCreate = () => {
+    cancel();
+    setDrawerOpen(true);
+  };
+  const openEdit = (r: Rep) => {
+    edit(r);
+    setDrawerOpen(true);
+  };
+  const onSubmit = async (e: React.FormEvent) => {
+    if (await submit(e)) setDrawerOpen(false);
+  };
+
   const totalQuota = reps.reduce((s, r) => s + r.quota, 0);
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader title="Team" count={reps.length} note={`${totalQuota.toLocaleString()} quota carried`} />
-
-      <Card title={editingId ? "Edit team member" : "Add team member"}>
-        <form onSubmit={submit} className="flex flex-wrap gap-4 items-end">
-          <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589]">
-            Name
-            <input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          </label>
-          <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589]">
-            Role
-            <input className={inputCls} value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder="Account Executive" />
-          </label>
-          <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589]">
-            Annual quota
-            <input
-              type="number"
-              className={inputCls}
-              value={form.quota}
-              onChange={(e) => setForm({ ...form, quota: +e.target.value || 0 })}
-            />
-          </label>
-          <button type="submit" className={primaryBtnCls} disabled={!form.name.trim()}>
-            {editingId ? "Save changes" : "Add to team"}
+      <PageHeader
+        title="Team"
+        count={reps.length}
+        note={`${totalQuota.toLocaleString()} quota carried`}
+        action={
+          <button onClick={openCreate} className={primaryBtnCls}>
+            <span className="inline-flex items-center gap-1.5"><Plus size={15} strokeWidth={2.4} /> Add team member</span>
           </button>
-          {editingId && (
-            <button type="button" className={ghostBtnCls} onClick={cancel}>
-              Cancel
-            </button>
-          )}
-        </form>
-      </Card>
-
-      {error && <p className="text-sm text-[#E0517A]">{error}</p>}
+        }
+      />
 
       <Card title="Team members" note={`${reps.length} ${reps.length === 1 ? "person" : "people"}`}>
         <div className="-mx-6 overflow-x-auto">
@@ -72,8 +65,8 @@ export function TeamTab({ wsId, reps, setReps }: { wsId: string; reps: Rep[]; se
               {reps.map((r) => (
                 <tr
                   key={r.id}
-                  onClick={() => edit(r)}
-                  className={`border-t border-[#F0ECF7] cursor-pointer transition-colors hover:bg-[#FAF9FC] ${editingId === r.id ? "bg-[#7C40D4]/5" : ""}`}
+                  onClick={() => openEdit(r)}
+                  className="border-t border-[#F0ECF7] cursor-pointer transition-colors hover:bg-[#FAF9FC]"
                 >
                   <td className="px-6 py-3.5 font-semibold">{r.name}</td>
                   <td className="px-6 py-3.5 text-[#7B7589]">{r.role || "—"}</td>
@@ -96,6 +89,52 @@ export function TeamTab({ wsId, reps, setReps }: { wsId: string; reps: Rep[]; se
           </table>
         </div>
       </Card>
+
+      {drawerOpen && (
+        <Drawer title={editingId ? "Edit team member" : "Add team member"} onClose={() => setDrawerOpen(false)}>
+          <form onSubmit={onSubmit} className="flex flex-col gap-4">
+            <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+              Name
+              <input className={`${inputCls} w-full`} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoFocus />
+            </label>
+            <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+              Role
+              <input className={`${inputCls} w-full`} value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder="Account Executive" />
+            </label>
+            <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
+              Annual quota
+              <input
+                type="number"
+                className={`${inputCls} w-full`}
+                value={form.quota}
+                onChange={(e) => setForm({ ...form, quota: +e.target.value || 0 })}
+              />
+            </label>
+
+            {error && <p className="text-sm text-[#E0517A]">{error}</p>}
+
+            <div className="flex items-center gap-3 pt-4 mt-2 border-t border-[#F0ECF7]">
+              {editingId && (
+                <button
+                  type="button"
+                  className="text-[13px] font-semibold text-[#E0517A] cursor-pointer transition-transform hover:scale-105 active:scale-95"
+                  onClick={async () => { await remove(editingId); setDrawerOpen(false); }}
+                >
+                  Remove
+                </button>
+              )}
+              <div className="ml-auto flex items-center gap-3">
+                <button type="button" className={ghostBtnCls} onClick={() => setDrawerOpen(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className={primaryBtnCls} disabled={!form.name.trim()}>
+                  {editingId ? "Save changes" : "Add to team"}
+                </button>
+              </div>
+            </div>
+          </form>
+        </Drawer>
+      )}
     </div>
   );
 }

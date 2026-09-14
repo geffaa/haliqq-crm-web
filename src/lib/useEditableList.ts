@@ -31,7 +31,9 @@ export function useEditableList<T extends { id: string }, TInput>(
     setForm(empty);
   };
 
-  const submit = async (e: React.FormEvent) => {
+  // Returns whether the save succeeded, so a caller driving a drawer can
+  // close it on success and leave it open (with `error` shown) on failure.
+  const submit = async (e: React.FormEvent): Promise<boolean> => {
     e.preventDefault();
     setError(null);
     try {
@@ -44,8 +46,10 @@ export function useEditableList<T extends { id: string }, TInput>(
         setItems([...items, created]);
         setForm(empty);
       }
+      return true;
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong.");
+      return false;
     }
   };
 

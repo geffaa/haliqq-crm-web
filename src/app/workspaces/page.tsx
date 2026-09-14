@@ -7,6 +7,7 @@ import { api, ApiError, type User, type Workspace } from "@/lib/api";
 import { short } from "@/lib/format";
 import { inputCls, primaryBtnCls } from "@/lib/ui";
 import { Mark } from "@/components/Mark";
+import { LogOut } from "lucide-react";
 
 export default function WorkspacesPage() {
   const router = useRouter();
@@ -44,6 +45,9 @@ export default function WorkspacesPage() {
     router.push("/sign-in");
   };
 
+  const initials = (name?: string) =>
+    (name ?? "?").split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+
   if (loading) return <div className="min-h-screen grid place-items-center text-[#7B7589] bg-[#F4F2F8]">Loading…</div>;
 
   return (
@@ -56,29 +60,37 @@ export default function WorkspacesPage() {
           <div className="text-[17px] font-bold text-[#141220]">Clients</div>
           <div className="text-[13px] text-[#7B7589]">{workspaces.length} {workspaces.length === 1 ? "workspace" : "workspaces"}</div>
         </div>
-        <div className="ml-auto flex items-center gap-4">
-          <div className="text-right">
-            <div className="text-[13.5px] font-semibold text-[#141220]">{user?.name}</div>
-            <div className="text-[12px] text-[#7B7589]">{user?.email}</div>
+        <div className="ml-auto flex items-center gap-3 pl-4 border-l border-[#E9E4F2]">
+          <span className="w-9 h-9 rounded-full bg-gradient-to-r from-[#7C40D4] via-[#B98CFF] to-[#FE7CC2] text-white grid place-items-center text-[12px] font-extrabold shrink-0">
+            {initials(user?.name)}
+          </span>
+          <div>
+            <div className="text-[13.5px] font-semibold text-[#141220] leading-tight">{user?.name}</div>
+            <div className="text-[12px] text-[#7B7589] leading-tight">{user?.email}</div>
           </div>
           <button
             onClick={signOut}
-            className="text-[13.5px] font-semibold text-[#7C40D4] cursor-pointer transition-transform duration-150 hover:scale-105 active:scale-95"
+            title="Sign out"
+            aria-label="Sign out"
+            className="w-8 h-8 rounded-lg text-[#7B7589] grid place-items-center cursor-pointer transition-colors hover:bg-[#F7F5FB] hover:text-[#E0517A]"
           >
-            Sign out
+            <LogOut size={16} strokeWidth={2} />
           </button>
         </div>
       </header>
 
       <div className="px-10 py-8 flex flex-col gap-7 max-w-[1600px]">
-        <div className="bg-white border border-[#E9E4F2] rounded-2xl p-6 max-w-xl">
-          <h2 className="text-[15px] font-bold text-[#141220] mb-4">New client</h2>
-          <form onSubmit={createWorkspace} className="flex flex-wrap gap-4 items-end">
-            <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589] flex-1 min-w-[180px]">
+        <div className="bg-white border border-[#E9E4F2] rounded-2xl p-6 flex flex-wrap items-end gap-6">
+          <div className="min-w-[160px]">
+            <h2 className="text-[15px] font-bold text-[#141220]">New client</h2>
+            <p className="text-[12.5px] text-[#7B7589] mt-1">Seeds default stages, sources, and channels.</p>
+          </div>
+          <form onSubmit={createWorkspace} className="flex flex-wrap gap-4 items-end flex-1">
+            <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589] flex-1 min-w-[220px]">
               Company name
               <input className={inputCls} value={newName} onChange={(e) => setNewName(e.target.value)} />
             </label>
-            <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589] flex-1 min-w-[180px]">
+            <label className="flex flex-col gap-1 text-[13px] font-semibold text-[#7B7589] flex-1 min-w-[220px]">
               Industry
               <input className={inputCls} value={newIndustry} onChange={(e) => setNewIndustry(e.target.value)} />
             </label>

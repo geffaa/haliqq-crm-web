@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LogOut, Plus } from "lucide-react";
+import { Plus, Building2 } from "lucide-react";
 import { api, ApiError, type User, type Workspace } from "@/lib/api";
 import { short } from "@/lib/format";
 import { inputCls, primaryBtnCls, ghostBtnCls } from "@/lib/ui";
 import { Mark } from "@/components/Mark";
 import { Drawer } from "@/components/Drawer";
+import { PageHeader } from "@/components/PageHeader";
+import { AccountMenu } from "@/components/AccountMenu";
 
 export default function WorkspacesPage() {
   const router = useRouter();
@@ -48,9 +50,6 @@ export default function WorkspacesPage() {
     router.push("/sign-in");
   };
 
-  const initials = (name?: string) =>
-    (name ?? "?").split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
-
   if (loading) return <div className="min-h-screen grid place-items-center text-[#7B7589] bg-[#F4F2F8]">Loading…</div>;
 
   return (
@@ -59,35 +58,22 @@ export default function WorkspacesPage() {
         <span className="w-9 h-9 rounded-xl bg-gradient-to-r from-[#7C40D4] via-[#B98CFF] to-[#FE7CC2] text-white grid place-items-center shrink-0">
           <Mark size={16} />
         </span>
-        <div>
-          <div className="text-[17px] font-bold text-[#141220]">Clients</div>
-          <div className="text-[13px] text-[#7B7589]">{workspaces.length} {workspaces.length === 1 ? "workspace" : "workspaces"}</div>
-        </div>
+        <span className="text-[15px] font-bold text-[#141220]">Haliqq</span>
 
-        <button onClick={() => setDrawerOpen(true)} className={`${primaryBtnCls} ml-6`}>
-          <span className="inline-flex items-center gap-1.5"><Plus size={15} strokeWidth={2.4} /> New client</span>
-        </button>
-
-        <div className="ml-auto flex items-center gap-3 pl-4 border-l border-[#E9E4F2]">
-          <span className="w-9 h-9 rounded-full bg-gradient-to-r from-[#7C40D4] via-[#B98CFF] to-[#FE7CC2] text-white grid place-items-center text-[12px] font-extrabold shrink-0">
-            {initials(user?.name)}
-          </span>
-          <div>
-            <div className="text-[13.5px] font-semibold text-[#141220] leading-tight">{user?.name}</div>
-            <div className="text-[12px] text-[#7B7589] leading-tight">{user?.email}</div>
-          </div>
-          <button
-            onClick={signOut}
-            title="Sign out"
-            aria-label="Sign out"
-            className="w-8 h-8 rounded-lg text-[#7B7589] grid place-items-center cursor-pointer transition-colors hover:bg-[#F7F5FB] hover:text-[#E0517A]"
-          >
-            <LogOut size={16} strokeWidth={2} />
-          </button>
-        </div>
+        <AccountMenu name={user?.name} email={user?.email} onSignOut={signOut} />
       </header>
 
       <div className="px-10 py-8 flex flex-col gap-7 max-w-[1600px]">
+        <PageHeader
+          title="Your clients"
+          count={workspaces.length}
+          action={
+            <button onClick={() => setDrawerOpen(true)} className={primaryBtnCls}>
+              <span className="inline-flex items-center gap-1.5"><Plus size={15} strokeWidth={2.4} /> New client</span>
+            </button>
+          }
+        />
+
         {workspaces.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {workspaces.map((w) => (
@@ -121,8 +107,14 @@ export default function WorkspacesPage() {
           </div>
         )}
         {!workspaces.length && (
-          <div className="bg-white border border-dashed border-[#E9E4F2] rounded-2xl p-12 text-center text-[#7B7589]">
-            No client workspaces yet. Create the first one above.
+          <div className="bg-white border border-dashed border-[#E9E4F2] rounded-2xl py-16 flex flex-col items-center gap-3 text-center">
+            <span className="w-12 h-12 rounded-2xl bg-[#7C40D4]/10 text-[#7C40D4] grid place-items-center">
+              <Building2 size={22} strokeWidth={1.8} />
+            </span>
+            <div className="text-[15px] font-bold text-[#141220]">No clients yet</div>
+            <p className="text-[13px] text-[#7B7589] max-w-xs">
+              Every client gets its own isolated workspace. Create the first one with the button above.
+            </p>
           </div>
         )}
       </div>

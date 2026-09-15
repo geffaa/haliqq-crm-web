@@ -10,7 +10,7 @@ export function PageHeader({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-4 flex-wrap">
+    <div className="flex items-center gap-4 flex-wrap pb-5 border-b border-[#E9E4F2]">
       <div className="flex items-baseline gap-4">
         <h1 className="text-[26px] font-bold tracking-tight text-[#141220]">{title}</h1>
         {count !== undefined && (

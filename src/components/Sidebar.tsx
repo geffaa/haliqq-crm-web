@@ -21,7 +21,7 @@ export const SPACES: Space[] = [
     label: "Sales",
     icon: TrendingUp,
     subs: [
-      { id: "dash", label: "Dashboard", ready: false },
+      { id: "dash", label: "Dashboard", ready: true },
       { id: "deals", label: "Deals", ready: true },
       { id: "companies", label: "Companies", ready: true },
       { id: "people", label: "People", ready: true },

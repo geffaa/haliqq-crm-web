@@ -65,8 +65,10 @@ export type Deal = {
   scope: string;
   note: string;
   lostReason: string | null;
+  createdAt: string;
+  stageSince: string;
 };
-export type DealInput = Omit<Deal, "id">;
+export type DealInput = Omit<Deal, "id" | "createdAt" | "stageSince">;
 
 // CRUD helper: builds list/create/update/delete calls for one workspace-scoped
 // entity so each resource below is a one-liner instead of four repeats.

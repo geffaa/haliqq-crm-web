@@ -10,6 +10,7 @@ import { CompaniesTab } from "./CompaniesTab";
 import { ContactsTab } from "./ContactsTab";
 import { DealsTab } from "./DealsTab";
 import { OverviewTab } from "./OverviewTab";
+import { SalesOverviewTab } from "./SalesOverviewTab";
 
 export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: wsId } = use(params);
@@ -81,6 +82,7 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
           {space === "exec" && sub === "dash" && (
             <OverviewTab accounts={accounts} deals={deals} stages={stages} sources={sources} />
           )}
+          {space === "sales" && sub === "dash" && <SalesOverviewTab deals={deals} stages={stages} />}
           {space === "sales" && sub === "deals" && (
             <DealsTab wsId={wsId} deals={deals} setDeals={setDeals} accounts={accounts} contacts={contacts} reps={reps} stages={stages} sources={sources} />
           )}
@@ -93,7 +95,7 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
           {space === "sales" && sub === "team" && <TeamTab wsId={wsId} reps={reps} setReps={setReps} />}
 
           {!(space === "exec" && sub === "dash") &&
-            !(space === "sales" && ["deals", "companies", "people", "team"].includes(sub)) && (
+            !(space === "sales" && ["dash", "deals", "companies", "people", "team"].includes(sub)) && (
               <NotBuiltYet label={space === "ask" ? "Ask" : space} milestone={milestoneFor(space)} />
             )}
         </div>

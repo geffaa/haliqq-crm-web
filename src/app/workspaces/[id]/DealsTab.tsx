@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Flag } from "lucide-react";
 import { api, ApiError, type Deal, type DealInput, type Account, type Contact, type Rep, type Stage, type Source } from "@/lib/api";
 import { inputCls, primaryBtnCls, ghostBtnCls, dangerBtnCls } from "@/lib/ui";
 import { useEditableList } from "@/lib/useEditableList";
@@ -93,6 +93,10 @@ export function DealsTab({
   };
 
   const accountName = (id: string | null) => accounts.find((a) => a.id === id)?.name ?? "—";
+  // 21 days matches the prototype's original "aging" threshold — a deal
+  // untouched that long in an open stage needs re-qualifying, not just tracking.
+  const daysInStage = (d: Deal) => Math.round((Date.now() - new Date(d.stageSince).getTime()) / 86400000);
+  const isStalled = (d: Deal, stageKind: string) => stageKind === "open" && daysInStage(d) > 21;
   const totalValue = deals.reduce((s, d) => s + d.value, 0);
 
   return (
@@ -157,7 +161,17 @@ export function DealsTab({
                     >
                       <div className="text-[13.5px] font-bold text-[#141220] leading-snug">{d.title}</div>
                       <div className="text-[12px] text-[#7B7589] mt-1">{accountName(d.accountId)}</div>
-                      <div className="text-[13px] font-bold text-[#141220] mt-2">{d.value.toLocaleString()}</div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-[13px] font-bold text-[#141220]">{d.value.toLocaleString()}</span>
+                        {isStalled(d, stage.kind) && (
+                          <span
+                            className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E0517A] bg-[#E0517A]/10 rounded-full px-2 py-0.5 ml-auto"
+                            title={`${daysInStage(d)} days in this stage — re-qualify or move it`}
+                          >
+                            <Flag size={10} strokeWidth={2.4} /> {daysInStage(d)}d
+                          </span>
+                        )}
+                      </div>
                     </article>
                   ))}
                   {!items.length && <div className="text-[12px] text-[#9A93A6] text-center py-4">Nothing here</div>}

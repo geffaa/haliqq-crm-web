@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { Globe, TrendingUp, Megaphone, Sparkles, ChevronRight, ArrowLeft, type LucideIcon } from "lucide-react";
+import { Globe, TrendingUp, Megaphone, Sparkles, ChevronRight, type LucideIcon } from "lucide-react";
 import { Mark } from "./Mark";
 
 export type SpaceId = "exec" | "sales" | "marketing" | "ask";
@@ -46,14 +45,10 @@ export const SPACES: Space[] = [
 ];
 
 export function Sidebar({
-  workspaceName,
-  workspaceIndustry,
   space,
   sub,
   onNavigate,
 }: {
-  workspaceName: string;
-  workspaceIndustry: string;
   space: SpaceId;
   sub: SubId;
   onNavigate: (space: SpaceId, sub: SubId) => void;
@@ -68,21 +63,11 @@ export function Sidebar({
 
   return (
     <aside className="w-[300px] shrink-0 bg-white border-r border-[#E9E4F2] flex flex-col h-screen sticky top-0">
-      <header className="flex items-center gap-3 px-4 py-4 border-b border-[#F0ECF7]">
-        <Link
-          href="/workspaces"
-          className="w-8 h-8 rounded-lg bg-[#F7F5FB] text-[#7B7589] grid place-items-center cursor-pointer transition-transform hover:scale-105 active:scale-95"
-          title="All clients"
-        >
-          <ArrowLeft size={15} strokeWidth={2.2} />
-        </Link>
+      <header className="flex items-center gap-2.5 px-4 py-4 border-b border-[#F0ECF7]">
         <span className="w-9 h-9 rounded-xl bg-gradient-to-r from-[#7C40D4] via-[#B98CFF] to-[#FE7CC2] text-white grid place-items-center shadow-[0_3px_10px_rgba(124,64,212,.3)]">
           <Mark size={16} />
         </span>
-        <div className="min-w-0">
-          <div className="text-[14px] font-bold text-[#141220] truncate">{workspaceName}</div>
-          <div className="text-[11px] text-[#7B7589] truncate">{workspaceIndustry || "—"}</div>
-        </div>
+        <span className="text-[15px] font-bold text-[#141220]">Haliqq</span>
       </header>
 
       <nav className="flex-1 overflow-y-auto px-3 py-4">

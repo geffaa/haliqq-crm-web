@@ -1,13 +1,16 @@
 import { type Account, type Deal, type Stage, type Source } from "@/lib/api";
 import { short, pct } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
-import { Card } from "@/components/Card";
 import { StatTile } from "@/components/StatTile";
 
 // Every figure here is computed from real rows already loaded for this
-// workspace — nothing here is a placeholder number. Metrics that need data
-// we don't collect yet (ad spend for CAC, historical ARR snapshots for NRR)
-// are named explicitly below instead of being faked.
+// workspace, nothing is a placeholder number.
+//
+// Not shown yet, and why (internal note, not for the dashboard):
+//   CAC / LTV:CAC     needs paid ad spend (Marketing import, Milestone 3)
+//   NRR / GRR         needs historical ARR snapshots (expansion/churn tracking)
+//   Pipeline coverage needs an annual revenue target to compare against
+// See docs/phase1-adapted-scope.md for the full breakdown.
 export function OverviewTab({ accounts, deals, stages, sources }: { accounts: Account[]; deals: Deal[]; stages: Stage[]; sources: Source[] }) {
   const stageKind = (id: string) => stages.find((s) => s.id === id)?.kind;
   const stageProb = (id: string) => stages.find((s) => s.id === id)?.prob ?? 0;
@@ -44,14 +47,6 @@ export function OverviewTab({ accounts, deals, stages, sources }: { accounts: Ac
           sub={wonDeals.length ? `${marketingWon.length} of ${wonDeals.length} wins` : "No wins yet"}
         />
       </div>
-
-      <Card title="Not available yet" note="Needs data we don't collect yet">
-        <ul className="text-sm text-[#7B7589] leading-relaxed list-disc pl-4 flex flex-col gap-1">
-          <li><b className="text-[#141220]">CAC / LTV:CAC</b> — needs paid ad spend (Marketing import, Milestone 3)</li>
-          <li><b className="text-[#141220]">NRR / GRR</b> — needs historical ARR snapshots (expansion/churn tracking)</li>
-          <li><b className="text-[#141220]">Pipeline coverage</b> — needs an annual revenue target to compare against</li>
-        </ul>
-      </Card>
     </div>
   );
 }

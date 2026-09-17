@@ -29,7 +29,7 @@ export function SalesOverviewTab({ deals, stages }: { deals: Deal[]; stages: Sta
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader title="Sales overview" note="All-time — no date range filter yet" />
+      <PageHeader title="Sales overview" note="All-time" />
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <StatTile label="Revenue won" value={short(revenueWon)} sub={`${won.length} deals won`} />

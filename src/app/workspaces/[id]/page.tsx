@@ -2,8 +2,10 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import { api, ApiError, type Account, type Contact, type Rep, type Deal, type Stage, type Source, type Workspace } from "@/lib/api";
-import { Sidebar, type SpaceId, type SubId } from "@/components/Sidebar";
+import { Sidebar, SPACES, type SpaceId, type SubId } from "@/components/Sidebar";
 import { NotBuiltYet } from "@/components/NotBuiltYet";
 import { TeamTab } from "./TeamTab";
 import { CompaniesTab } from "./CompaniesTab";
@@ -62,13 +64,12 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
     return <div className="min-h-screen grid place-items-center text-[#7B7589] bg-[#F4F2F8]">Loading…</div>;
   }
 
-  const milestoneFor = (s: SpaceId) => (s === "marketing" ? "Milestone 3 (content, ads, creative library)" : "a later milestone");
+  const currentSpace = SPACES.find((s) => s.id === space)!;
+  const currentSub = currentSpace.subs.find((s) => s.id === sub)!;
 
   return (
     <div className="min-h-screen flex bg-[#F4F2F8]">
       <Sidebar
-        workspaceName={workspace.name}
-        workspaceIndustry={workspace.industry}
         space={space}
         sub={sub}
         onNavigate={(s, sb) => {
@@ -77,7 +78,20 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
         }}
       />
 
-      <main className="flex-1 min-w-0 px-10 py-8">
+      <div className="flex-1 min-w-0 flex flex-col">
+        <header className="h-[52px] shrink-0 flex items-center gap-2 px-10 bg-white border-b border-[#E9E4F2] sticky top-0 z-10 text-[13.5px]">
+          <Link href="/workspaces" className="font-semibold text-[#7B7589] hover:text-[#141220] transition-colors">
+            Clients
+          </Link>
+          <ChevronRight size={13} className="text-[#C7C2D6]" />
+          <span className="font-semibold text-[#141220]">{workspace.name}</span>
+          <ChevronRight size={13} className="text-[#C7C2D6]" />
+          <span className="text-[#7B7589]">{currentSpace.label}</span>
+          <ChevronRight size={13} className="text-[#C7C2D6]" />
+          <span className="text-[#7B7589]">{currentSub.label}</span>
+        </header>
+
+        <main className="flex-1 min-w-0 px-10 py-8">
         <div className="max-w-[1600px] flex flex-col gap-7">
           {space === "exec" && sub === "dash" && (
             <OverviewTab accounts={accounts} deals={deals} stages={stages} sources={sources} />
@@ -96,10 +110,11 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
 
           {!(space === "exec" && sub === "dash") &&
             !(space === "sales" && ["dash", "deals", "companies", "people", "team"].includes(sub)) && (
-              <NotBuiltYet label={space === "ask" ? "Ask" : space} milestone={milestoneFor(space)} />
+              <NotBuiltYet label={currentSpace.label} />
             )}
         </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

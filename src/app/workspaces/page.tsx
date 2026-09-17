@@ -123,7 +123,7 @@ export default function WorkspacesPage() {
         <Drawer title="New client" onClose={() => setDrawerOpen(false)}>
           <form onSubmit={createWorkspace} className="flex flex-col gap-4">
             <p className="text-[13px] text-[#7B7589] leading-relaxed -mt-1">
-              A fresh workspace is created with default stages, sources, and channels — you can change all of them inside it.
+              A fresh workspace is created with default stages, sources, and channels. You can change all of them inside it.
             </p>
             <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#7B7589]">
               Company name

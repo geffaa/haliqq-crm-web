@@ -166,7 +166,7 @@ export function DealsTab({
                         {isStalled(d, stage.kind) && (
                           <span
                             className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E0517A] bg-[#E0517A]/10 rounded-full px-2 py-0.5 ml-auto"
-                            title={`${daysInStage(d)} days in this stage — re-qualify or move it`}
+                            title={`${daysInStage(d)} days in this stage. Re-qualify or move it.`}
                           >
                             <Flag size={10} strokeWidth={2.4} /> {daysInStage(d)}d
                           </span>

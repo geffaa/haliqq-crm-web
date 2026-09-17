@@ -94,7 +94,15 @@ export default function WorkspaceDetailPage({ params }: { params: Promise<{ id: 
         <main className="flex-1 min-w-0 px-10 py-8">
         <div className="max-w-[1600px] flex flex-col gap-7">
           {space === "exec" && sub === "dash" && (
-            <OverviewTab accounts={accounts} deals={deals} stages={stages} sources={sources} />
+            <OverviewTab
+              wsId={wsId}
+              workspace={workspace}
+              setWorkspace={setWorkspace}
+              accounts={accounts}
+              deals={deals}
+              stages={stages}
+              sources={sources}
+            />
           )}
           {space === "sales" && sub === "dash" && <SalesOverviewTab deals={deals} stages={stages} />}
           {space === "sales" && sub === "deals" && (

@@ -21,7 +21,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export type User = { id: string; name: string; email: string };
-export type Workspace = { id: string; name: string; industry: string; role: string; arr: number; openDeals: number };
+export type Workspace = {
+  id: string;
+  name: string;
+  industry: string;
+  role: string;
+  arr: number;
+  openDeals: number;
+  annualTarget: number | null;
+};
 
 export type Stage = { id: string; label: string; position: number; prob: number; kind: "open" | "won" | "lost" };
 export type Source = { id: string; label: string; marketing: boolean; position: number };
@@ -95,6 +103,8 @@ export const api = {
   listWorkspaces: () => request<Workspace[]>("/workspaces"),
   createWorkspace: (data: { name: string; industry: string }) =>
     request<Workspace>("/workspaces", { method: "POST", body: JSON.stringify(data) }),
+  updateWorkspace: (wsId: string, data: { name: string; industry: string; annualTarget: number | null }) =>
+    request<Workspace>(`/workspaces/${wsId}`, { method: "PATCH", body: JSON.stringify(data) }),
 
   listStages: (wsId: string) => request<Stage[]>(`/workspaces/${wsId}/stages`),
   listSources: (wsId: string) => request<Source[]>(`/workspaces/${wsId}/sources`),

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Globe, TrendingUp, Megaphone, Sparkles, ChevronRight, type LucideIcon } from "lucide-react";
+import Link from "next/link";
+import { Globe, TrendingUp, Megaphone, Sparkles, ChevronRight, ArrowLeft, type LucideIcon } from "lucide-react";
 import { Mark } from "./Mark";
 
 export type SpaceId = "exec" | "sales" | "marketing" | "ask";
@@ -123,6 +124,16 @@ export function Sidebar({
           })}
         </div>
       </nav>
+
+      <footer className="border-t border-[#F0ECF7] p-3">
+        <Link
+          href="/workspaces"
+          className="flex items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-[13.5px] font-semibold text-[#7B7589] cursor-pointer transition-colors hover:bg-[#F8F5FC] hover:text-[#141220]"
+        >
+          <ArrowLeft size={15} strokeWidth={2.2} />
+          Back to clients
+        </Link>
+      </footer>
     </aside>
   );
 }

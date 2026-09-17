@@ -3,13 +3,15 @@ import { short, pct } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
 import { StatTile } from "@/components/StatTile";
 
-// Every figure here is computed from real rows already loaded for this
-// workspace, nothing is a placeholder number.
+// This is the "Revenue cockpit" from Haliqq_OS_Product_Breakdown.xlsx —
+// "are we on track for the one number". Every figure here is computed from
+// real rows already loaded for this workspace, nothing is a placeholder.
 //
 // Not shown yet, and why (internal note, not for the dashboard):
-//   CAC / LTV:CAC     needs paid ad spend (Marketing import, Milestone 3)
-//   NRR / GRR         needs historical ARR snapshots (expansion/churn tracking)
-//   Pipeline coverage needs an annual revenue target to compare against
+//   Revenue vs target, coverage  needs an annual revenue target (no such field yet)
+//   Cost per won deal, CAC/LTV  needs paid ad spend (Marketing import, Milestone 3)
+//   Funnel, "what changed this week"  needs a timeframe/comparison engine
+//   NRR / GRR                   needs historical ARR snapshots (expansion/churn tracking)
 // See docs/phase1-adapted-scope.md for the full breakdown.
 export function OverviewTab({ accounts, deals, stages, sources }: { accounts: Account[]; deals: Deal[]; stages: Stage[]; sources: Source[] }) {
   const stageKind = (id: string) => stages.find((s) => s.id === id)?.kind;
@@ -31,11 +33,17 @@ export function OverviewTab({ accounts, deals, stages, sources }: { accounts: Ac
   const marketingWon = wonDeals.filter((d) => d.sourceId && marketingSourceIds.has(d.sourceId));
   const mktShare = wonDeals.length ? marketingWon.length / wonDeals.length : null;
 
+  const lostValue = lostDeals.reduce((s, d) => s + d.value, 0);
+
+  const churned = accounts.filter((a) => a.lifecycle === "Churned");
+  const everCustomer = accounts.filter((a) => a.lifecycle === "Customer" || a.lifecycle === "Churned");
+  const logoChurn = everCustomer.length ? churned.length / everCustomer.length : null;
+
   return (
     <div className="flex flex-col gap-5">
       <PageHeader title="Overview" note={`${customers.length} active ${customers.length === 1 ? "customer" : "customers"}`} />
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatTile label="Total ARR" value={short(totalARR)} sub={`${customers.length} active accounts`} />
         <StatTile label="Open pipeline" value={short(openValue)} sub={`${openDeals.length} open deals`} />
         <StatTile label="Weighted forecast" value={short(weighted)} sub="Value × stage probability" />
@@ -45,6 +53,12 @@ export function OverviewTab({ accounts, deals, stages, sources }: { accounts: Ac
           label="Marketing-sourced"
           value={pct(mktShare)}
           sub={wonDeals.length ? `${marketingWon.length} of ${wonDeals.length} wins` : "No wins yet"}
+        />
+        <StatTile label="Lost value" value={short(lostValue)} sub={`${lostDeals.length} lost deals`} />
+        <StatTile
+          label="Logo churn"
+          value={pct(logoChurn)}
+          sub={everCustomer.length ? `${churned.length} of ${everCustomer.length} accounts` : "No customers yet"}
         />
       </div>
     </div>
